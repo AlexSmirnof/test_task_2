@@ -1,0 +1,17 @@
+<gsa-template>
+ 
+ <item-descriptor name="user">
+
+    <table name="loyalty_dynamusic_loyaltyTrasactions" type="multi" id-column-name="user_id" multi-column-name="idx">
+        <property name="loyaltyTransactions" category="loyalty" data-type="list"
+                  component-item-type="loyaltyTransaction"
+		  repository="/loyalty/LoyaltyRepository" 
+		  column-name="loyaltyTransaction_id" 
+		  cascade="delete" />
+    </table>
+
+    <property name="loyaltyAmount" column-name="loyaltyAmount" data-type="int" default="0" category="loyalty"/>
+
+ </item-descriptor>
+
+</gsa-template>

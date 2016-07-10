@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE gsa-template PUBLIC "-//Art Technology Group, Inc.//DTD General SQL Adapter//EN" "http://www.atg.com/dtds/gsa/gsa_1.0.dtd">
+
+<gsa-template>
+    <header>
+        <name>LoyaltyRepository</name>
+        <author>Alexandr Smirnov</author>
+    </header>
+    <item-descriptor name="loyaltyTransaction" display-name="loyaltyTransaction">
+	<table name="loyalty_loyaltyTransaction" type="primary" id-column-name="id">
+	    <property name="amount" data-type="int" column-name="amount" required="true"/>
+	    <property name="description" data-type="string" column-name="description"/>
+	    <property name="created" data-type="timestamp" column-name="created" required="true">
+		<attribute name="useNowForDefault" value="true"/>
+	    </property>	
+	    <property name="user" data-type="string" column-name="profile_id" required="true"/>
+	</table>
+    </item-descriptor>
+</gsa-template>

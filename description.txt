@@ -1,0 +1,103 @@
+0. to adding points to user for purchase
+   create class ProcAddPointsToUserForPurchase extends GenericService implements PipelineProcessor 
+   create /config/atg/commerce/commercepipeline.xml
+
+
+1. create new class LoyaltyPoints extends PaymentGroupImpl;
+
+2. implementing processors for new PaymentGroup: 
+  - CreateLoyaltyPointsInfo
+  - second pipeline processor to authorize, debit, and credit - ProcProcessLoyaltyPoints
+  - processor that implements LoyaltyPointsProcessor interface and actually performs the payment operations - LoyaltyPointsProcessorImpl 
+
+  loyaltyPointsProcessorChain pipeline is composed
+  - CreateLoyaltyPointsInfo processor (class atg.commerce.payment.processor.ProcCreateLoyaltyPointsInfo)
+  - ProcessLoyaltyPoints processor (class atg.commerce.payment.processor.ProcProcessLoyaltyPoints).   
+  ProcessLoyaltyPoints processor calls through to a LoyaltyPointsProcessor object to perform the actual operations.
+  The specific object used to perform the actual operations is retrieved from PaymentManager.loyaltyPointsProcessor, 
+  which points to an object instantiated from a class that implements the atg.payment.loyaltypoints.LoyaltyPointsProcessor interface.
+
+2.1 First, write the LoyaltyPointsProcessor interface that defines the authorize(), debit(), and credit().
+2.2 Second, write new class named LoyaltyPointsProcessorImpl implementation of LoyaltyPointsProcessor interface and extends GenericService ). 
+2.3 Third, implement pipeline processor that performs payment transactions for LoyaltyPointsPaymentGroup by calling through to LoyaltyPointsProcessorImpl, 
+    because it will be called within context of pipeline, it must also implement atg.service.pipeline.PipelineProcessor interface.
+
+    atg.commerce.payment.processor.ProcProcessPaymentGroup:
+    abstract class that implements both the PipelineProcessor interface and several other helper methods that determine
+    what action is requested (authorize, debit, or credit) and then dispatch to the appropriate method call. 
+    by extending ProcProcessPaymentGroup, you only need to define three abstract methods: authorizePaymentGroup(), debitPaymentGroup() and creditPaymentGroup(). 
+
+2.3.1 create new class ProcProcessLoyaltyPoints extends ProcProcessPaymentGroup abstract class
+      include and set additional property loyaltyPointsProcessor to LoyaltyPointsProcessorImpl and override methods.
+2.3.2 create class LoyaltyPointsInfo that hold all of the data required by the methods in LoyaltyPointsProcessorImpl:
+      userId, numberOfPoints, 
+
+      before the ProcProcessLoyaltyPoints pipeline processor is invoked, a previous pipeline processor must aggregate the necessary information
+      for performing the requested payment action, create an XXXInfo object for use in that action, and finally add the XXXInfo object to the 
+      PaymentManagerPipelineArgsDictionary object. The Dictionary object is then passed as argument “downstream” to ProcProcessLoyaltyPoints 
+      pipeline processor and on to the LoyaltyPointsProcessorImpl processor.
+
+2.3.3 create class ProcCreateLoyaltyPointsInfo processor extends GenericService implements PipelineProcessor
+      that must construct LoyaltyPointsInfo object and add it to PaymentManagerPipelineArgsDictionary object.
+
+2.3.4 create class LoyaltyPointsStatus extends PaymentStatusImpl
+
+
+3. Integrating the New Payment Processors into the PaymentManager
+
+3.1 create pipeline that creates LoyaltyPointsInfo objects and processes the LoyaltyPointsPaymentGroup for authorization, debits, and credits.
+3.1.1 create Nucleus component for ProcCreateLoyaltyPointsInfo obj located at /loyalty/payment/processor/CreateLoyaltyPointsInfo
+3.1.2 create Nucleus component for ProcProcessLoyaltyPoints object located at /loyalty/payment/processor/ProcessLoyaltyPoints
+3.1.3 create Nucleus component for LoyaltyPointsProcessorImpl obj  located at /loyalty/payment/LoyaltyPointsProcessor
+3.1.4 define loyaltyPointsProcessorChain pipeline and add it to paymentpipeline.xml file in Nucleus at /atg/commerce/payment/paymentpipeline.xml 
+
+3.2 configure the PaymentManager to invoke LoyaltyPointsProcessorChain pipeline when an operation is requested on LoyaltyPointsPaymentGroup
+    new configuration file would be located in Nucleus at /atg/commerce/payment/PaymentManager
+
+
+4. Extending Order Validation to Support New Payment Methods
+   when user checks out Order -> 
+   ATG Commerce purchase process execute validateForCheckout pipeline, which is defined in commercepipeline.xml ->
+   validateForCheckout pipeline includes ValidatePaymentGroupsForCheckout processor, which iterates over payment groups 
+   in Order and calls validatePaymentGroup pipeline for each one to verify that payment group is ready for checkout ->
+   validatePaymentGroup pipeline begins with a processor that examines type of current PaymentGroup and 
+   transfers control to pipeline processor appropriate to that type.
+
+4.1 Implement a validation pipeline processor: 
+    create new class public class ProcValidateLoyaltyPoints extends GenericService implements PipelineProcessor
+4.2 Create an instance of the processor located at /loyalty/checkout/ValidateLoyaltyPoints.properties
+4.3 Add the custom payment method to the ValidatePaymentGroupByType processor
+    config/atg/commerce/order/processor/ValidatePaymentGroupByType.properties: returnValues+=\loyaltyPoints=10
+4.4 Add the custom payment method to the validatePaymentGroup pipeline:
+    modify the pipeline in config/atg/commerce/commercepipeline.xml
+
+
+5  Extend Order Repository Definition File: /atg/commerce/order/orderrepository.xml
+ - modify Order Repository Database Schema
+ - modify OrderTools Configuration File: /atg/commerce/order/OrderTools.properties
+   
+
+6. Create  class LoyaltyPointsInitializer extends GenericService implements PaymentGroupInitializer 
+   + \atg\commerce\order\purchase\LoyaltyPointsInitializer.properties file
+   + \atg\commerce\order\purchase\PaymentGroupDroplet.properties file and edit ServiceMap
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

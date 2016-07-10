@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE pipelinemanager SYSTEM "http://www.atg.com/dtds/pipelinemanager/pipelinemanager_1.0.dtd">
+
+<pipelinemanager>
+
+	<pipelinechain name="validatePaymentGroup" headlink="dispatchOnPGType" transaction="TX_REQUIRED" xml-combine="append">
+		<pipelinelink name="dispatchOnPGType" transaction="TX_MANDATORY" xml-combine="append">
+			<transition returnvalue="6000" link="validateLoyaltyPoints"/>
+		</pipelinelink>
+		<pipelinelink name="validateLoyaltyPoints" transaction="TX_MANDATORY">
+		    <processor jndi="/loyalty/checkout/ValidateLoyaltyPoints"/>
+		</pipelinelink>
+	</pipelinechain>
+
+	<pipelinechain name="processOrder" transaction="TX_REQUIRED" headlink="executeValidateForCheckoutChain" xml-combine="append">
+		<pipelinelink name="addOrderToRepository" transaction="TX_MANDATORY" xml-combine="replace">
+        		<processor jndi="/atg/commerce/order/processor/AddOrderToRepository"/>
+        		<transition returnvalue="1" link="addLoyaltyPoints"/>
+      		</pipelinelink>
+		<pipelinelink name="addLoyaltyPoints" transaction="TX_MANDATORY">
+        		<processor jndi="/loyalty/payment/processor/AddLoyaltyPoints"/>
+        		<transition returnvalue="1" link="sendPromotionUsedMessage"/>
+      		</pipelinelink>
+	</pipelinechain>
+
+  	<pipelinechain name="validatePaymentGroupPreConfirmation" headlink="dispatchOnPGTypePreConfirmation" transaction="TX_REQUIRED" xml-combine="append">
+	        <pipelinelink name="dispatchOnPGTypePreConfirmation" transaction="TX_MANDATORY" xml-combine="append">
+      			<transition returnvalue="6000" link="validateLoyaltyPointsPreConfirmation"/>
+    		</pipelinelink>
+    		<pipelinelink name="validateLoyaltyPointsPreConfirmation" transaction="TX_MANDATORY">
+      			<processor jndi="/loyalty/checkout/ValidateLoyaltyPoints"/>
+    		</pipelinelink>
+  	</pipelinechain>
+
+	<pipelinechain name="validatePaymentGroupPostApproval" headlink="dispatchOnPGTypePostApproval" transaction="TX_REQUIRED" xml-combine="append">
+    		<pipelinelink name="dispatchOnPGTypePostApproval" transaction="TX_MANDATORY" xml-combine="append">
+      			<transition returnvalue="6000" link="validateLoyaltyPointsPGPostApproval"/>
+    		</pipelinelink>
+    		<pipelinelink name="validateLoyaltyPointsPGPostApproval" transaction="TX_MANDATORY">
+      			<processor jndi="/loyalty/checkout/ValidateLoyaltyPoints"/>
+    		</pipelinelink>
+ 	</pipelinechain>
+
+  	<pipelinechain name="validatePaymentGroupNoApproval" headlink="dispatchOnPGTypeNoApproval" transaction="TX_REQUIRED" xml-combine="append">
+    		<pipelinelink name="dispatchOnPGTypeNoApproval" transaction="TX_MANDATORY" xml-combine="append">
+      			<transition returnvalue="6000" link="validateLoyaltyPointsPGNoApproval"/>
+    		</pipelinelink>
+    		<pipelinelink name="validateLoyaltyPointsPGNoApproval" transaction="TX_MANDATORY">
+      			<processor jndi="/loyalty/checkout/ValidateLoyaltyPoints"/>
+    		</pipelinelink>
+  	</pipelinechain>
+	
+</pipelinemanager>		    	

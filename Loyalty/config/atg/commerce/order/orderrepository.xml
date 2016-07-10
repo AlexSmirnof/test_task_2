@@ -1,0 +1,20 @@
+<gsa-template xml-combine="append">
+	
+   <item-descriptor name="paymentGroup" sub-type-property="type">
+	 <table name="dcspp_pay_group" type="primary" id-column-name="payment_group_id">
+      	    <property name="type" required="true">
+      			<option value="loyaltyPoints" code="6000"/>
+            </property>
+        </table>
+    </item-descriptor>
+
+    <item-descriptor name="loyaltyPoints" super-type="paymentGroup" sub-type-value="loyaltyPoints">
+    	<table name="dcspp_loyalty_points" type="auxiliary" id-column-name="payment_group_id">
+    		<property name="numberOfPoints" column-name="number_of_points" data-type="int" required="true"/>
+    		<property name="userId" column-name="user_id" data-type="string" required="true"/>
+    	</table>
+    </item-descriptor>
+    
+  </gsa-template>    
+
+    		    

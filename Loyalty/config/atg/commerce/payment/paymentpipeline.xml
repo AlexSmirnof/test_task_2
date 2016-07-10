@@ -1,0 +1,12 @@
+
+<pipelinemanager>
+	<pipelinechain name="loyaltyPointsProcessorChain" transaction="TX_REQUIRED" headlink="createLoyaltyPointsInfo">
+		<pipelinelink name="createLoyaltyPointsInfo" transaction="TX_MANDATORY">
+			<processor jndi="/loyalty/payment/processor/CreateLoyaltyPointsInfo"/>
+			<transition returnvalue="1" link="processLoyaltyPoints"/>
+		</pipelinelink>
+		<pipelinelink name="processLoyaltyPoints" transaction="TX_MANDATORY">
+			<processor jndi="/loyalty/payment/processor/ProcessLoyaltyPoints"/>
+		</pipelinelink>
+	</pipelinechain>
+</pipelinemanager>
